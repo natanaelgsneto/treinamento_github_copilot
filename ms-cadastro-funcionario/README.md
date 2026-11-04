@@ -56,38 +56,26 @@ Este microserviço faz parte da migração do sistema monolítico da TechNovaMBA
 ```
 ms-cadastro-funcionario/
 ├── app/
-│   ├── domain/                 # 🏛️ Camada de Domínio
-│   │   ├── entities/           # Entidades de negócio
-│   │   │   ├── funcionario.py  # Entidade principal
-│   │   │   └── value_objects.py # Email, Cargo, Telefone
-│   │   ├── repositories/       # Contratos de repositório
-│   │   └── exceptions/         # Exceções de domínio
-│   │
-│   ├── application/            # 🎯 Camada de Aplicação
-│   │   ├── use_cases/          # Casos de uso CRUD
-│   │   ├── dto/               # Data Transfer Objects
-│   │   ├── services/          # Serviços de aplicação
-│   │   └── coordinators/      # Coordenação entre use cases
-│   │
-│   ├── infrastructure/         # 🔧 Camada de Infraestrutura
-│   │   ├── database/          # Configuração MongoDB
-│   │   └── repositories/      # Implementação de repositórios
-│   │
-│   ├── presentation/          # 🌐 Camada de Apresentação
-│   │   ├── api/              # Endpoints FastAPI
-│   │   │   ├── controllers/   # Controllers REST
-│   │   │   └── v1/           # Versionamento da API
-│   │   ├── schemas/          # Schemas Pydantic
-│   │   └── middleware/       # Middlewares customizados
-│   │
-│   └── shared/               # 🛠️ Utilitários Compartilhados
-│       ├── exceptions/       # Exceções base
-│       └── utils/           # Utilities gerais
-│
-├── scripts/                  # Scripts auxiliares
-├── tests/                   # Estrutura de testes (futuro)
-├── docs/                    # Documentação adicional
-└── requirements/            # Dependências organizadas
+│   ├── domain/                   # Entidades, value objects, contratos e exceções
+│   ├── application/              # Casos de uso, DTOs, serviços e validações
+│   ├── infrastructure/           # MongoDB, configurações e repositórios
+│   ├── presentation/             # API, schemas e dependências
+│   ├── shared/                   # Logging, middleware e utilitários comuns
+│   └── main.py                   # Criação e configuração da aplicação FastAPI
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── fixtures/
+├── requirements/
+│   ├── base.txt                  # Dependências para execução
+│   ├── dev.txt                   # Dependências de desenvolvimento e testes
+│   └── prod.txt                  # Dependências de produção
+├── docker/                       # Espaço para recursos adicionais do Docker
+├── docs/                         # Documentação técnica e operacional
+├── scripts/                      # Scripts auxiliares
+├── .env.example                  # Modelo de configuração local
+├── main.py                       # Ponto de entrada compatível com Uvicorn
+└── requirements.txt              # Inclui requirements/base.txt
 ```
 
 ### Stack Tecnológica
@@ -346,13 +334,12 @@ curl -X DELETE "http://localhost:8000/api/v1/funcionarios/60d5ecb74b24c3b3d8f8e1
 ### Estrutura de Configuração
 
 ```python
-# app/config.py
+# app/infrastructure/config/settings.py
 class Settings:
-    mongodb_url: str = "mongodb://localhost:27017"
-    database_name: str = "funcionarios_db"
-    api_host: str = "0.0.0.0"
-    api_port: int = 8000
-    # ... outras configurações
+    MONGODB_URL: str = "mongodb://localhost:27017"
+    DATABASE_NAME: str = "funcionarios_db"
+    API_HOST: str = "0.0.0.0"
+    API_PORT: int = 8000
 ```
 
 ## 🛠 Desenvolvimento

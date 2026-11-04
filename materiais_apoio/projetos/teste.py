@@ -1,30 +1,54 @@
-from typing import Iterable
-
-def process_data(data: Iterable[str | None]) -> list[str]:
+def calcular_imc(peso, altura):
     """
-    Retorna lista ordenada de strings únicas normalizadas.
+    Calcula o Índice de Massa Corporal (IMC) com base no peso e altura fornecidos.
 
-    Processo:
-    - Ignora valores None.
-    - strip() para remover espaços das extremidades.
-    - casefold() para normalização case-insensitive robusta (Unicode).
-    - Ignora resultados vazios.
-    - Mantém a ordem da primeira ocorrência e garante unicidade em O(n).
+    Parâmetros:
+    peso (float): Peso em quilogramas.
+    altura (float): Altura em metros.
 
-    :param data: Iterável de strings ou None.
-    :return: Lista de strings únicas normalizadas.
+    Retorna:
+    float: O valor do IMC calculado.
     """
-    seen: set[str] = set()
-    result: list[str] = []
-    for item in data:
-        if item is None:
-            continue
-        processed = item.strip()
-        if not processed:
-            continue
-        processed = processed.casefold()
-        if processed in seen:
-            continue
-        seen.add(processed)
-        result.append(processed)
-    return result
+    if altura <= 0:
+        raise ValueError("A altura deve ser maior que zero.")
+    
+    imc = peso / (altura ** 2)
+    return imc
+
+def classificar_imc(imc):
+    """
+    Classifica o IMC em categorias de acordo com os valores padrão.
+
+    Parâmetros:
+    imc (float): O valor do IMC a ser classificado.
+
+    Retorna:
+    str: A categoria correspondente ao IMC.
+    """
+    if imc < 18.5:
+        return "Abaixo do peso"
+    elif 18.5 <= imc < 24.9:
+        return "Peso normal"
+    elif 25 <= imc < 29.9:
+        return "Sobrepeso"
+    else:
+        return "Obesidade"
+
+def main():
+    """
+    Função principal que solicita ao usuário o peso e altura, calcula o IMC e exibe a classificação.
+    """
+    try:
+        peso = float(input("Digite seu peso em kg: "))
+        altura = float(input("Digite sua altura em metros: "))
+        
+        imc = calcular_imc(peso, altura)
+        classificacao = classificar_imc(imc)
+        
+        print(f"Seu IMC é: {imc:.2f}")
+        print(f"Classificação: {classificacao}")
+    except ValueError as e:
+        print(f"Erro: {e}")
+
+if __name__ == "__main__":
+    main()
