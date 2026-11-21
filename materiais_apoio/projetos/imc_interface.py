@@ -162,7 +162,7 @@ imc_label = tk.Label(
     textvariable=imc_var,
     foreground="#0b3d91",
     font=("Arial", 12, "bold"),
-    anchor="left",
+    anchor="w",
     justify="center"
 )
 imc_label.grid(

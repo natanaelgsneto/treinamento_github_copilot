@@ -25,37 +25,52 @@ Um aplicativo web simples para gerenciar tarefas diárias, desenvolvido com Pyth
 
 ## 🚀 Como Executar
 
-### 1. Clone ou baixe o projeto
+### 1. Abra a pasta do projeto
 
-```bash
-# Se usando git
-git clone <url-do-repositorio>
+No terminal, navegue até `materiais_apoio/projetos/gerenciador_tarefas`.
 
-# Ou baixe os arquivos diretamente
+```powershell
+cd .\materiais_apoio\projetos\gerenciador_tarefas
 ```
 
-### 2. Navegue até o diretório do projeto
+### 2. Crie e ative um ambiente virtual (recomendado)
 
 ```bash
-cd gerenciador_tarefas
+python -m venv .venv
 ```
 
-### 3. Instale as dependências
+No PowerShell:
 
-```bash
-pip install -r requirements.txt
+```powershell
+.\.venv\Scripts\Activate.ps1
 ```
 
-**Ou instale diretamente o Streamlit:**
+No macOS/Linux, ative-o com `source .venv/bin/activate`.
+
+### 3. Instale as dependências do aplicativo
 
 ```bash
-pip install streamlit
+python -m pip install -r requirements.txt
 ```
 
-### 4. Execute a aplicação
+O único requisito para executar o aplicativo é o Streamlit (`streamlit>=1.28.0`),
+declarado em `requirements.txt`.
+
+Como alternativa, o script interativo instala as dependências e pergunta se você
+deseja iniciar o aplicativo:
 
 ```bash
-streamlit run app.py
+python setup.py
+```
+
+No Windows também é possível executar `executar.bat`. Ele instala as dependências
+no Python selecionado no PATH; para evitar instalações globais, crie e ative o
+ambiente virtual antes de usá-lo.
+
+### 4. Inicie o aplicativo
+
+```bash
+python -m streamlit run app.py
 ```
 
 ### 5. Acesse a aplicação
@@ -73,7 +88,21 @@ gerenciador_tarefas/
 ├── app.py                          # Aplicação principal
 ├── requirements.txt                # Dependências do projeto
 ├── README.md                       # Documentação (este arquivo)
+├── SETUP_WINDOWS.md                # Instruções para Windows
+├── setup.py                        # Setup interativo
+├── executar.bat                    # Setup e execução no Windows
+├── test_app.py                     # Testes da lógica de tarefas
 └── gerenciador_tarefas_simples.md  # Especificação do projeto
+```
+
+### Executar os testes
+
+Os testes são opcionais para executar o aplicativo. Para rodá-los, instale o
+pytest no ambiente virtual e execute:
+
+```bash
+python -m pip install pytest
+python -m pytest -q
 ```
 
 ## 💡 Como Usar

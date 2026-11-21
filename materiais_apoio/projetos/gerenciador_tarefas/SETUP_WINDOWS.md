@@ -1,100 +1,51 @@
-# 🚀 Instruções de Setup - Windows PowerShell
+# Setup no Windows
 
-## Instalação e Execução no Windows
+## Requisitos
 
-### Opção 1: Script Automático (Mais Fácil)
+- Python 3.8 ou superior disponível como `python` no PowerShell.
+- A dependência de execução é Streamlit (`streamlit>=1.28.0`), declarada em
+  `requirements.txt`.
 
-1. **Abra o PowerShell como Administrador**
-2. **Execute o script de setup:**
-   ```powershell
-   python setup.py
-   ```
+## Instalação recomendada
 
-### Opção 2: Script Batch (Windows)
+Abra o PowerShell na raiz do repositório e execute:
 
-1. **Clique duas vezes no arquivo `executar.bat`**
-2. **O script irá:**
-   - Verificar se Python está instalado
-   - Instalar as dependências automaticamente
-   - Executar a aplicação
-
-### Opção 3: Manual (PowerShell)
-
-1. **Abra o PowerShell na pasta do projeto:**
-   ```powershell
-   cd "caminho\para\gerenciador_tarefas"
-   ```
-
-2. **Instale as dependências:**
-   ```powershell
-   pip install streamlit
-   ```
-
-3. **Execute a aplicação:**
-   ```powershell
-   streamlit run app.py
-   ```
-
-### Opção 4: Com Ambiente Virtual (Recomendado)
-
-1. **Crie um ambiente virtual:**
-   ```powershell
-   python -m venv venv
-   ```
-
-2. **Ative o ambiente virtual:**
-   ```powershell
-   .\venv\Scripts\Activate.ps1
-   ```
-
-3. **Instale as dependências:**
-   ```powershell
-   pip install -r requirements.txt
-   ```
-
-4. **Execute a aplicação:**
-   ```powershell
-   streamlit run app.py
-   ```
-
-## 🔧 Possíveis Problemas e Soluções
-
-### Erro: "Execution of scripts is disabled"
-Se aparecer erro de política de execução no PowerShell:
 ```powershell
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+cd .\materiais_apoio\projetos\gerenciador_tarefas
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 ```
 
-### Erro: "streamlit command not found"
-1. Reinstale o streamlit:
-   ```powershell
-   pip uninstall streamlit
-   pip install streamlit
-   ```
+Se a ativação do ambiente virtual for bloqueada pela política do PowerShell,
+execute `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+uma vez, ou use o terminal do VS Code configurado para executar o script.
 
-2. Ou execute diretamente:
-   ```powershell
-   python -m streamlit run app.py
-   ```
+## Iniciar o aplicativo
 
-### Erro: "Python não encontrado"
-1. Instale Python do site oficial: https://python.org
-2. Certifique-se de marcar "Add to PATH" durante a instalação
-3. Reinicie o PowerShell
+Com o ambiente virtual ativo e o terminal na pasta do projeto:
 
-## 🌐 Acessando a Aplicação
+```powershell
+python -m streamlit run app.py
+```
 
-Após executar, a aplicação estará disponível em:
-- **URL**: http://localhost:8501
-- O navegador deve abrir automaticamente
-- Se não abrir, copie e cole a URL no navegador
+Abra http://localhost:8501 no navegador. Para encerrar, pressione `Ctrl+C` no
+terminal.
 
-## ⏹️ Parar a Aplicação
+## Opções automatizadas
 
-Para parar a aplicação:
-- **PowerShell**: Pressione `Ctrl + C`
-- **Ou**: Feche a janela do terminal
+- `python setup.py`: instala as dependências usando o Python atual e pergunta se
+  deve iniciar o aplicativo. Ative o ambiente virtual antes para não instalar
+  pacotes globalmente.
+- `.\executar.bat`: instala as dependências e inicia o aplicativo com o Python
+  encontrado no PATH. Também é recomendado ativar o ambiente virtual antes de
+  usá-lo.
 
----
+Para executar os testes, instale pytest separadamente e rode o comando de teste:
 
-**💡 Dica**: Se estiver usando um ambiente de desenvolvimento como VS Code, você pode abrir o terminal integrado e seguir as mesmas instruções.
+```powershell
+python -m pip install pytest
+python -m pytest -q
+```
+
+Pytest não é necessário para executar o aplicativo.

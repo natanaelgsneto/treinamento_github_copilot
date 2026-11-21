@@ -6,12 +6,13 @@ Este script automatiza a instalação das dependências e execução da aplicaç
 
 import subprocess
 import sys
-import os
 from pathlib import Path
 
+PROJECT_DIR = Path(__file__).resolve().parent
 
-def verificar_python():
-    """Verifica se a versão do Python é adequada."""
+
+def verificar_python() -> bool:
+    """Verifica se o interpretador atual atende ao requisito Python 3.8+."""
     version = sys.version_info
     if version.major < 3 or (version.major == 3 and version.minor < 8):
         print("❌ Erro: Python 3.8+ é necessário")
@@ -22,15 +23,23 @@ def verificar_python():
     return True
 
 
-def instalar_dependencias():
-    """Instala as dependências do projeto."""
+def instalar_dependencias() -> bool:
+    """Instala as dependências declaradas no requirements.txt do projeto."""
     print("🔧 Instalando dependências...")
     
     try:
-        # Verificar se requirements.txt existe
-        requirements_path = Path("requirements.txt")
+        requirements_path = PROJECT_DIR / "requirements.txt"
         if requirements_path.exists():
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+            subprocess.check_call(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "-r",
+                    str(requirements_path),
+                ]
+            )
         else:
             # Instalar streamlit diretamente
             subprocess.check_call([sys.executable, "-m", "pip", "install", "streamlit>=1.28.0"])
@@ -43,8 +52,8 @@ def instalar_dependencias():
         return False
 
 
-def verificar_streamlit():
-    """Verifica se o Streamlit está instalado corretamente."""
+def verificar_streamlit() -> bool:
+    """Confirma que o Streamlit pode ser importado pelo Python atual."""
     try:
         import streamlit
         print(f"✅ Streamlit {streamlit.__version__} instalado")
@@ -54,9 +63,9 @@ def verificar_streamlit():
         return False
 
 
-def executar_aplicacao():
-    """Executa a aplicação Streamlit."""
-    app_path = Path("app.py")
+def executar_aplicacao() -> bool:
+    """Inicia o app.py localizado nesta pasta usando o interpretador atual."""
+    app_path = PROJECT_DIR / "app.py"
     
     if not app_path.exists():
         print("❌ Arquivo app.py não encontrado!")
@@ -67,35 +76,39 @@ def executar_aplicacao():
     print("💡 Para parar a aplicação, pressione Ctrl+C")
     
     try:
-        subprocess.run([sys.executable, "-m", "streamlit", "run", "app.py"])
+        subprocess.run(
+            [sys.executable, "-m", "streamlit", "run", str(app_path)],
+            cwd=str(PROJECT_DIR),
+            check=True,
+        )
         return True
     except KeyboardInterrupt:
         print("\n👋 Aplicação finalizada pelo usuário")
         return True
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         print(f"❌ Erro ao executar aplicação: {e}")
         return False
 
 
-def main():
-    """Função principal do setup."""
+def main() -> int:
+    """Valida o ambiente, instala dependências e opcionalmente inicia o app."""
     print("=" * 50)
     print("📋 GERENCIADOR DE TAREFAS - SETUP")
     print("=" * 50)
     
     # Verificar Python
     if not verificar_python():
-        return
+        return 1
     
     # Instalar dependências
     if not instalar_dependencias():
         print("❌ Falha na instalação das dependências")
-        return
+        return 1
     
     # Verificar instalação do Streamlit
     if not verificar_streamlit():
         print("❌ Falha na verificação do Streamlit")
-        return
+        return 1
     
     print("\n" + "=" * 50)
     print("✅ SETUP CONCLUÍDO COM SUCESSO!")
@@ -106,11 +119,12 @@ def main():
     
     if resposta in ['s', 'sim', 'y', 'yes']:
         print()
-        executar_aplicacao()
+        return 0 if executar_aplicacao() else 1
     else:
         print("\n💡 Para executar manualmente, use: streamlit run app.py")
         print("📌 URL da aplicação: http://localhost:8501")
+        return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

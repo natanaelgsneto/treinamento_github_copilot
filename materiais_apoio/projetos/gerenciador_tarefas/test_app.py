@@ -1,4 +1,5 @@
 import pytest
+
 from app import (
     EstadoTarefas,
     inicializar_session_state,
@@ -6,6 +7,7 @@ from app import (
     atualizar_status_tarefa,
     obter_estatisticas
 )
+
 
 def test_inicializar_estado():
     estado = EstadoTarefas()

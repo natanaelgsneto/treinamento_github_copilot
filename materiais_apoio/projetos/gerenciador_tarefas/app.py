@@ -8,50 +8,63 @@ Autor: Programador Python SR
 Data: Agosto 2025
 """
 
-import streamlit as st
-from typing import List, Dict
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Dict, List, Optional, Protocol, TypedDict, cast
+
+import streamlit as st
+
+
+class Tarefa(TypedDict):
+    """Representa uma tarefa exibida e armazenada na sessão atual."""
+
+    id: int
+    nome: str
+    concluida: bool
+
+
+class EstadoTarefasProtocol(Protocol):
+    """Define os atributos compartilhados pelo estado real e pelo estado de teste."""
+
+    tarefas: List[Tarefa]
+    contador_id: int
 
 
 @dataclass
 class EstadoTarefas:
-    """
-    Contêiner simples para permitir testes unitários sem depender
-    do st.session_state real do Streamlit.
-    """
-    tarefas: List[Dict] = field(default_factory=list)
+    """Contêiner de estado que permite testar a lógica sem iniciar o Streamlit."""
+
+    tarefas: List[Tarefa] = field(default_factory=list)
     contador_id: int = 0
 
 
-def _estado(estado: Optional[object]):
-    """
-    Retorna o estado passado (mock) ou o st.session_state real.
-    """
-    return estado if estado is not None else st.session_state
+def _estado(estado: Optional[EstadoTarefasProtocol] = None) -> EstadoTarefasProtocol:
+    """Retorna o estado recebido ou o estado de sessão fornecido pelo Streamlit."""
+    if estado is not None:
+        return estado
+    return cast(EstadoTarefasProtocol, st.session_state)
 
 
-def inicializar_session_state(estado: Optional[object] = None):
-    """
-    Inicializa o estado (real ou simulado em testes).
-    """
+def inicializar_session_state(
+    estado: Optional[EstadoTarefasProtocol] = None,
+) -> None:
+    """Cria a lista de tarefas e o contador quando ainda não existem no estado."""
     est = _estado(estado)
-    if not hasattr(est, 'tarefas'):
+    if not hasattr(est, "tarefas"):
         est.tarefas = []
-    if not hasattr(est, 'contador_id'):
+    if not hasattr(est, "contador_id"):
         est.contador_id = 0
 
 
-def adicionar_tarefa(nome_tarefa: str, estado: Optional[object] = None) -> bool:
-    """
-    Adiciona tarefa no estado fornecido ou st.session_state.
-    """
+def adicionar_tarefa(
+    nome_tarefa: str, estado: Optional[EstadoTarefasProtocol] = None
+) -> bool:
+    """Adiciona uma tarefa não vazia e retorna se a operação foi realizada."""
     est = _estado(estado)
     if nome_tarefa.strip():
         nova_tarefa = {
-            'id': est.contador_id,
-            'nome': nome_tarefa.strip(),
-            'concluida': False
+            "id": est.contador_id,
+            "nome": nome_tarefa.strip(),
+            "concluida": False,
         }
         est.tarefas.append(nova_tarefa)
         est.contador_id += 1
@@ -59,40 +72,56 @@ def adicionar_tarefa(nome_tarefa: str, estado: Optional[object] = None) -> bool:
     return False
 
 
-def atualizar_status_tarefa(tarefa_id: int, status: bool, estado: Optional[object] = None) -> None:
-    """
-    Atualiza status de uma tarefa no estado alvo.
-    """
+def atualizar_status_tarefa(
+    tarefa_id: int,
+    status: bool,
+    estado: Optional[EstadoTarefasProtocol] = None,
+) -> None:
+    """Atualiza a conclusão da tarefa identificada; não faz nada se não existir."""
     est = _estado(estado)
     for tarefa in est.tarefas:
-        if tarefa['id'] == tarefa_id:
-            tarefa['concluida'] = status
+        if tarefa["id"] == tarefa_id:
+            tarefa["concluida"] = status
             break
 
 
-def obter_estatisticas(estado: Optional[object] = None) -> Dict[str, int]:
-    """
-    Calcula estatísticas a partir do estado escolhido.
-    """
+def obter_estatisticas(
+    estado: Optional[EstadoTarefasProtocol] = None,
+) -> Dict[str, int]:
+    """Retorna as quantidades total, concluída e pendente no estado escolhido."""
     est = _estado(estado)
     total = len(est.tarefas)
-    concluidas = sum(1 for tarefa in est.tarefas if tarefa['concluida'])
+    concluidas = sum(1 for tarefa in est.tarefas if tarefa["concluida"])
     pendentes = total - concluidas
-    
+
     return {
-        'total': total,
-        'concluidas': concluidas,
-        'pendentes': pendentes
+        "total": total,
+        "concluidas": concluidas,
+        "pendentes": pendentes,
     }
 
 
-def renderizar_cabecalho():
-    """
-    Renderiza o cabeçalho da aplicação com título e estatísticas.
-    """
+def _adicionar_tarefa_interface() -> None:
+    """Processa o envio do formulário e prepara o feedback da interface."""
+    nome_tarefa = st.session_state.get("nome_tarefa", "")
+    if adicionar_tarefa(nome_tarefa):
+        st.session_state["mensagem_sucesso"] = (
+            f"✅ Tarefa '{nome_tarefa.strip()}' adicionada com sucesso!"
+        )
+        st.session_state["mensagem_erro"] = ""
+        st.session_state["nome_tarefa"] = ""
+    else:
+        st.session_state["mensagem_sucesso"] = ""
+        st.session_state["mensagem_erro"] = (
+            "❌ Por favor, insira um nome válido para a tarefa."
+        )
+
+
+def renderizar_cabecalho() -> None:
+    """Exibe o título e as métricas da sessão atual."""
     st.title("📋 Gerenciador de Tarefas")
     st.markdown("---")
-    
+
     # Exibir estatísticas
     stats = obter_estatisticas()
     col1, col2, col3 = st.columns(3)
@@ -103,49 +132,44 @@ def renderizar_cabecalho():
         st.metric("Concluídas", stats['concluidas'])
     with col3:
         st.metric("Pendentes", stats['pendentes'])
-    
+
     st.markdown("---")
 
 
-def renderizar_formulario_adicionar():
-    """
-    Renderiza o formulário para adicionar novas tarefas.
-    """
+def renderizar_formulario_adicionar() -> None:
+    """Exibe o campo de texto e o botão para cadastrar uma tarefa."""
     st.subheader("➕ Adicionar Nova Tarefa")
-    
-    # Criar formulário
-    with st.form(key="form_adicionar_tarefa", clear_on_submit=True):
-        col1, col2 = st.columns([3, 1])
-        
-        with col1:
-            nome_tarefa = st.text_input(
-                "Nome da Tarefa",
-                placeholder="Digite o nome da tarefa...",
-                help="Insira uma descrição clara da tarefa que deseja adicionar"
-            )
-        
-        with col2:
-            submit_button = st.form_submit_button("Adicionar", type="primary")
-        
-        # Processar envio do formulário
-        if submit_button:
-            if adicionar_tarefa(nome_tarefa):
-                st.success(f"✅ Tarefa '{nome_tarefa}' adicionada com sucesso!")
-                st.rerun()
-            else:
-                st.error("❌ Por favor, insira um nome válido para a tarefa.")
+    col1, col2 = st.columns([3, 1])
+
+    with col1:
+        st.text_input(
+            "Nome da Tarefa",
+            placeholder="Digite o nome da tarefa...",
+            help="Insira uma descrição clara da tarefa que deseja adicionar",
+            key="nome_tarefa",
+        )
+
+    with col2:
+        st.button(
+            "Adicionar",
+            type="primary",
+            on_click=_adicionar_tarefa_interface,
+        )
+
+    if st.session_state.get("mensagem_sucesso"):
+        st.success(st.session_state["mensagem_sucesso"])
+    if st.session_state.get("mensagem_erro"):
+        st.error(st.session_state["mensagem_erro"])
 
 
-def renderizar_lista_tarefas():
-    """
-    Renderiza a lista de tarefas com checkboxes para marcar como concluídas.
-    """
+def renderizar_lista_tarefas() -> None:
+    """Exibe tarefas, filtros e checkboxes para atualizar seus status."""
     st.subheader("📝 Lista de Tarefas")
-    
+
     if not st.session_state.tarefas:
         st.info("🎯 Nenhuma tarefa cadastrada ainda. Adicione sua primeira tarefa acima!")
         return
-    
+
     # Filtros
     col1, col2 = st.columns(2)
     with col1:
@@ -159,75 +183,78 @@ def renderizar_lista_tarefas():
             "Ordenar por:",
             ["Mais recentes", "Mais antigas", "Concluídas primeiro", "Pendentes primeiro"]
         )
-    
+
     # Aplicar filtros
     tarefas_filtradas = list(st.session_state.tarefas)
-    
+
     if filtro == "Pendentes":
-        tarefas_filtradas = [t for t in tarefas_filtradas if not t['concluida']]
+        tarefas_filtradas = [t for t in tarefas_filtradas if not t["concluida"]]
     elif filtro == "Concluídas":
-        tarefas_filtradas = [t for t in tarefas_filtradas if t['concluida']]
-    
+        tarefas_filtradas = [t for t in tarefas_filtradas if t["concluida"]]
+
     # Aplicar ordenação
     if ordenar_por == "Mais antigas":
-        tarefas_filtradas.sort(key=lambda x: x['id'])
+        tarefas_filtradas.sort(key=lambda x: x["id"])
     elif ordenar_por == "Mais recentes":
-        tarefas_filtradas.sort(key=lambda x: x['id'], reverse=True)
+        tarefas_filtradas.sort(key=lambda x: x["id"], reverse=True)
     elif ordenar_por == "Concluídas primeiro":
-        tarefas_filtradas.sort(key=lambda x: x['concluida'], reverse=True)
+        tarefas_filtradas.sort(key=lambda x: x["concluida"], reverse=True)
     elif ordenar_por == "Pendentes primeiro":
-        tarefas_filtradas.sort(key=lambda x: x['concluida'])
-    
+        tarefas_filtradas.sort(key=lambda x: x["concluida"])
+
     # Exibir tarefas
     st.markdown("---")
-    
+
     for tarefa in tarefas_filtradas:
         col1, col2 = st.columns([0.1, 0.9])
         
         with col1:
             # Checkbox para marcar como concluída
-            status_atual = tarefa['concluida']
+            status_atual = tarefa["concluida"]
             novo_status = st.checkbox(
-                "",
+                f"Concluir tarefa: {tarefa['nome']}",
                 value=status_atual,
                 key=f"checkbox_{tarefa['id']}",
-                help="Marque para concluir a tarefa"
+                help="Marque para concluir a tarefa",
+                label_visibility="collapsed",
             )
             
             # Atualizar status se houve mudança
             if novo_status != status_atual:
-                atualizar_status_tarefa(tarefa['id'], novo_status)
+                atualizar_status_tarefa(tarefa["id"], novo_status)
                 st.rerun()
-        
+
         with col2:
             # Exibir nome da tarefa com formatação baseada no status
-            if tarefa['concluida']:
-                st.markdown(f"~~{tarefa['nome']}~~ ✅", unsafe_allow_html=True)
+            if tarefa["concluida"]:
+                st.markdown(f"~~{tarefa['nome']}~~ ✅")
             else:
                 st.markdown(f"**{tarefa['nome']}** ⏳")
-        
+
         st.markdown("---")
 
 
-def renderizar_acoes_extras():
-    """
-    Renderiza ações extras como limpar tarefas concluídas.
-    """
+def renderizar_acoes_extras() -> None:
+    """Exibe controles para remover tarefas concluídas ou limpar toda a lista."""
     if st.session_state.tarefas:
         st.subheader("⚙️ Ações")
-        
+
         col1, col2 = st.columns(2)
-        
+
         with col1:
             if st.button("🧹 Limpar Concluídas", help="Remove todas as tarefas marcadas como concluídas"):
-                tarefas_concluidas = sum(1 for t in st.session_state.tarefas if t['concluida'])
-                st.session_state.tarefas = [t for t in st.session_state.tarefas if not t['concluida']]
+                tarefas_concluidas = sum(
+                    1 for t in st.session_state.tarefas if t["concluida"]
+                )
+                st.session_state.tarefas = [
+                    t for t in st.session_state.tarefas if not t["concluida"]
+                ]
                 if tarefas_concluidas > 0:
                     st.success(f"✅ {tarefas_concluidas} tarefa(s) concluída(s) removida(s)!")
                     st.rerun()
                 else:
                     st.info("ℹ️ Não há tarefas concluídas para remover.")
-        
+
         with col2:
             if st.button("🗑️ Limpar Todas", help="Remove todas as tarefas da lista"):
                 total_tarefas = len(st.session_state.tarefas)
@@ -239,12 +266,11 @@ def renderizar_acoes_extras():
                     st.info("ℹ️ Não há tarefas para remover.")
 
 
-def main():
+def main() -> None:
     """
-    Função principal da aplicação.
-    
-    Configura a página do Streamlit e renderiza todos os componentes
-    da interface do usuário.
+    Configura a página, inicializa o estado e renderiza a interface.
+
+    Execute a aplicação com `python -m streamlit run app.py`.
     """
     # Configuração da página
     st.set_page_config(

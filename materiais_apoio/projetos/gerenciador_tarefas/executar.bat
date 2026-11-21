@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 echo ========================================
 echo     GERENCIADOR DE TAREFAS - SETUP
 echo ========================================
@@ -17,7 +18,7 @@ echo ✅ Python detectado
 :: Instalar dependências
 echo.
 echo 🔧 Instalando dependencias...
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 if %errorlevel% neq 0 (
     echo ❌ Erro ao instalar dependencias
     pause
@@ -36,6 +37,6 @@ echo 🚀 A aplicacao sera aberta em: http://localhost:8501
 echo 💡 Para parar a aplicacao, pressione Ctrl+C
 echo.
 
-streamlit run app.py
+python -m streamlit run app.py
 
 pause
