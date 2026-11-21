@@ -15,17 +15,17 @@ def verificar_python() -> bool:
     """Verifica se o interpretador atual atende ao requisito Python 3.8+."""
     version = sys.version_info
     if version.major < 3 or (version.major == 3 and version.minor < 8):
-        print("❌ Erro: Python 3.8+ é necessário")
+        print("ERRO: Python 3.8+ e necessario")
         print(f"Versão atual: {version.major}.{version.minor}.{version.micro}")
         return False
     
-    print(f"✅ Python {version.major}.{version.minor}.{version.micro} detectado")
+    print(f"OK: Python {version.major}.{version.minor}.{version.micro} detectado")
     return True
 
 
 def instalar_dependencias() -> bool:
     """Instala as dependências declaradas no requirements.txt do projeto."""
-    print("🔧 Instalando dependências...")
+    print("Instalando dependencias...")
     
     try:
         requirements_path = PROJECT_DIR / "requirements.txt"
@@ -44,11 +44,11 @@ def instalar_dependencias() -> bool:
             # Instalar streamlit diretamente
             subprocess.check_call([sys.executable, "-m", "pip", "install", "streamlit>=1.28.0"])
         
-        print("✅ Dependências instaladas com sucesso!")
+        print("OK: Dependencias instaladas com sucesso!")
         return True
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ Erro ao instalar dependências: {e}")
+        print(f"ERRO: Falha ao instalar dependencias: {e}")
         return False
 
 
@@ -56,10 +56,10 @@ def verificar_streamlit() -> bool:
     """Confirma que o Streamlit pode ser importado pelo Python atual."""
     try:
         import streamlit
-        print(f"✅ Streamlit {streamlit.__version__} instalado")
+        print(f"OK: Streamlit {streamlit.__version__} instalado")
         return True
     except ImportError:
-        print("❌ Streamlit não encontrado")
+        print("ERRO: Streamlit nao encontrado")
         return False
 
 
@@ -68,12 +68,12 @@ def executar_aplicacao() -> bool:
     app_path = PROJECT_DIR / "app.py"
     
     if not app_path.exists():
-        print("❌ Arquivo app.py não encontrado!")
+        print("ERRO: Arquivo app.py nao encontrado!")
         return False
     
-    print("🚀 Iniciando aplicação...")
-    print("📌 A aplicação será aberta em: http://localhost:8501")
-    print("💡 Para parar a aplicação, pressione Ctrl+C")
+    print("Iniciando aplicacao...")
+    print("A aplicacao sera aberta em: http://localhost:8501")
+    print("Para parar a aplicacao, pressione Ctrl+C")
     
     try:
         subprocess.run(
@@ -83,17 +83,17 @@ def executar_aplicacao() -> bool:
         )
         return True
     except KeyboardInterrupt:
-        print("\n👋 Aplicação finalizada pelo usuário")
+        print("\nAplicacao finalizada pelo usuario")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Erro ao executar aplicação: {e}")
+        print(f"ERRO: Falha ao executar aplicacao: {e}")
         return False
 
 
 def main() -> int:
     """Valida o ambiente, instala dependências e opcionalmente inicia o app."""
     print("=" * 50)
-    print("📋 GERENCIADOR DE TAREFAS - SETUP")
+    print("GERENCIADOR DE TAREFAS - SETUP")
     print("=" * 50)
     
     # Verificar Python
@@ -102,27 +102,27 @@ def main() -> int:
     
     # Instalar dependências
     if not instalar_dependencias():
-        print("❌ Falha na instalação das dependências")
+        print("ERRO: Falha na instalacao das dependencias")
         return 1
     
     # Verificar instalação do Streamlit
     if not verificar_streamlit():
-        print("❌ Falha na verificação do Streamlit")
+        print("ERRO: Falha na verificacao do Streamlit")
         return 1
     
     print("\n" + "=" * 50)
-    print("✅ SETUP CONCLUÍDO COM SUCESSO!")
+    print("SETUP CONCLUIDO COM SUCESSO!")
     print("=" * 50)
     
     # Perguntar se deseja executar a aplicação
-    resposta = input("\n🚀 Deseja executar a aplicação agora? (s/n): ").lower().strip()
+    resposta = input("\nDeseja executar a aplicacao agora? (s/n): ").lower().strip()
     
     if resposta in ['s', 'sim', 'y', 'yes']:
         print()
         return 0 if executar_aplicacao() else 1
     else:
-        print("\n💡 Para executar manualmente, use: streamlit run app.py")
-        print("📌 URL da aplicação: http://localhost:8501")
+        print("\nPara executar manualmente, use: streamlit run app.py")
+        print("URL da aplicacao: http://localhost:8501")
         return 0
 
 
